@@ -1212,6 +1212,45 @@ class DeadlineDispatcherTest(GafferTest.TestCase):
 
         self.assertEqual(jobs[0].getJobProperties()["Name"], "LittleDebbie")
 
+    def testWedgeTaskDependency(self):
+        #   n1 (LoggingTaskNode)
+        #   |
+        #   w1 (Wedge)
+        #   |
+        #   n2 (LoggingTaskNode)
+
+        s = Gaffer.ScriptNode()
+
+        s["n1"] = GafferDispatchTest.LoggingTaskNode()
+        s["n1"]["frame"] = Gaffer.StringPlug(
+            defaultValue="${wedge:value}.${frame}",
+            flags=Gaffer.Plug.Flags.Default | Gaffer.Plug.Flags.Dynamic
+        )
+
+        s["w1"] = GafferDispatch.Wedge()
+        s["w1"]["mode"].setValue(int(GafferDispatch.Wedge.Mode.StringList))
+        s["w1"]["strings"].setValue(IECore.StringVectorData(["a", "b", "c"]))
+        s["w1"]["preTasks"][0].setInput(s["n1"]["task"])
+
+        s["n2"] = GafferDispatchTest.LoggingTaskNode()
+        s["n2"]["preTasks"][0].setInput(s["w1"]["task"])
+
+        dispatcher = self.__dispatcher()
+        dispatcher["framesMode"].setValue(dispatcher.FramesMode.CurrentFrame)
+
+        with mock.patch(
+            "GafferDeadline.DeadlineTools.submitJob",
+            return_value=("testID", "testMessage")
+        ):
+            jobs = self.__job([s["n2"]], dispatcher)
+
+        self.assertEqual(len(jobs), 4)
+        for j in jobs:
+            if j.getJobProperties()["Name"] == "n1":
+                self.assertEqual(len(j.getDependencies()), 0)
+            elif j.getJobProperties()["Name"] == "n2":
+                self.assertEqual(len(j.getDependencies()), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

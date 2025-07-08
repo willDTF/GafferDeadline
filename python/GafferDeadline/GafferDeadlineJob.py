@@ -279,7 +279,7 @@ class GafferDeadlineJob(object):
             if not GafferDeadlineJob.isControlTask(b.node()):
                 job = None
                 for j in effectiveParentJobs:
-                    if j.getGafferNode() == b.node():
+                    if j.getGafferNode() == b.node() and j.getContext() == b.context():
                         job = j
                 if job is not None:
                     batches.append((job, b))
