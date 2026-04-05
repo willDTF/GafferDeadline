@@ -90,7 +90,7 @@ def __main__(jobID, taskIDs=None):
             return taskIDs
 
         for jobDepId in jobDependencyIds:
-            if printDebug: print "Scanning {} for released dependencies".format(jobDepId)
+            if printDebug: print("Scanning {} for released dependencies".format(jobDepId))
             jobDepObj = RepositoryUtils.GetJob(jobDep, False)
             # If the job can't be found, assume it is ok to release it's dependents
             if jobDepObj is None:
@@ -100,7 +100,7 @@ def __main__(jobID, taskIDs=None):
             else:
                 jobDepTaskList = RepositoryUtils.GetJobTasks(jobDepObj, False).TaskCollectionTasks
                 completedTasks = [t for t in jobDepTaskList if t.TaskStatus.lower() == "completed"]
-                if printDebug: print "{} has {} completed tasks of {} total tasks: {}".format(jobDepId, len(completedTasks), len(jobDepTaskList), [t.TaskId for t in completedTasks])
+                if printDebug: print("{} has {} completed tasks of {} total tasks: {}".format(jobDepId, len(completedTasks), len(jobDepTaskList), [t.TaskId for t in completedTasks]))
                 for completedTask in completedTasks:
                     for d in dependencies:
                         if d.jobDependencyId == jobDepId and d.dependencyTaskId == int(completedTask.TaskId):

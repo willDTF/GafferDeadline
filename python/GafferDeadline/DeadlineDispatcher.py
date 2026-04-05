@@ -523,6 +523,10 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
         parentPlug["deadline"]["extraDeadlineSettings"] = Gaffer.AtomicCompoundDataPlug()
         parentPlug["deadline"]["extraEnvironmentVariables"] = Gaffer.AtomicCompoundDataPlug()
 
+        #DTF ADD DEFAUTS EXT TO DISPATCHER
+        ExtentionPath = Gaffer.NameValuePlug( "GAFFER_EXTENSION_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ['GAFFER_EXTENSION_PATHS'].replace('\\','/'),), "member1" )
+        parentPlug["deadline"]["environmentVariables"].addChild(ExtentionPath)
+
 
 IECore.registerRunTimeTyped(DeadlineDispatcher, typeName="GafferDeadline::DeadlineDispatcher")
 
