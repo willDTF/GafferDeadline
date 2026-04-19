@@ -16,6 +16,15 @@ Index=0
 Default=True
 Description=Not configurable.
 
+[Executable1_6_16_0]
+Type=multilinemultifilename
+Category=Gaffer 1.6.16.0 Executables
+CategoryOrder=0
+CategoryIndex=0
+Label=Gaffer 1.6.16.0 Render Executable
+Default=V:\launchers\WIN\gaffer_16_DEV.cmd
+Description=The path to the Gaffer 1.6.16.0 executable used for executing. Enter alternative paths on separate lines.
+
 [Executable1_3_16_7]
 Type=multilinemultifilename
 Category=Gaffer 1.3.16.7 Executables
