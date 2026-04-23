@@ -109,14 +109,14 @@ def __main__(jobID, taskIDs=None):
 
         releasedTasks = []
         for task in dependencies:
-            if printDebug: print "Scanning task #{} for dependencies".format(task.taskId)
+            if printDebug: print ("Scanning task #{} for dependencies".format(task.taskId))
             depsForThisTask = list(set([t for t in dependencies if t.taskId == task.taskId]))
             # print "Task #{} has {} dependencies: {}".format(task.taskId, len(depsForThisTask), ",".join([d.dependencyTaskId for d in depsForThisTask]))
             releasedDeps = list(set([d for d in depsForThisTask if d.isReleased]))
-            if printDebug: print "Task #{} has {} released dependencies".format(task.taskId, len(releasedDeps))
+            if printDebug: print ("Task #{} has {} released dependencies".format(task.taskId, len(releasedDeps)))
             if(len(depsForThisTask) == len(releasedDeps)):
                 releasedTasks.append(str(task.taskId))
-                if printDebug: print "All dependencies for task #{} have been completed. Releasing task #{}".format(task.taskId, task.taskId)
+                if printDebug: print ("All dependencies for task #{} have been completed. Releasing task #{}".format(task.taskId, task.taskId))
 
         if printDebug: print("Released tasks for {} = {}".format(jobID, releasedTasks))
         return list(set(releasedTasks))
