@@ -524,8 +524,14 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
         parentPlug["deadline"]["extraEnvironmentVariables"] = Gaffer.AtomicCompoundDataPlug()
 
         #DTF ADD DEFAUTS EXT TO DISPATCHER
-        ExtentionPath = Gaffer.NameValuePlug( "GAFFER_EXTENSION_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ['GAFFER_EXTENSION_PATHS'].replace('\\','/'),), "member1" )
+        ExtentionPath = Gaffer.NameValuePlug( "GAFFER_EXTENSION_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ.get('GAFFER_EXTENSION_PATHS', '').replace('\\','/'),), "member1" )
         parentPlug["deadline"]["environmentVariables"].addChild(ExtentionPath)
+
+        DtfPipe = Gaffer.NameValuePlug( "DTF_PIPE", Gaffer.StringPlug( "value", defaultValue = os.environ.get('DTF_PIPE', '').replace('\\','/'),), "dtfPipe" )
+        parentPlug["deadline"]["environmentVariables"].addChild(DtfPipe)
+
+        PrismJob = Gaffer.NameValuePlug( "prism:job", Gaffer.StringPlug( "value", defaultValue = os.environ.get('prism:job', ''),), "prismJob" )
+        parentPlug["deadline"]["environmentVariables"].addChild(PrismJob)
 
 
 IECore.registerRunTimeTyped(DeadlineDispatcher, typeName="GafferDeadline::DeadlineDispatcher")

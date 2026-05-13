@@ -144,6 +144,37 @@ class GafferPlugin(DeadlinePlugin):
             self.FailRender("Gaffer %s render executable could not be found in the semicolon separated list \"%s\". The path to the render executable can be configured from the Plugin Configuration in the Deadline Monitor." % (
                 self.Version, gafferExeList))
 
+        # Derive GAFFER_ROOT from the executable path:
+        #   .../gaffer-x.y.z-windows/bin/gaffer.exe  →  .../gaffer-x.y.z-windows
+        # This mirrors what the gaffer wrapper script does interactively, so that
+        # built-in OSL shaders ($GAFFER_ROOT/shaders/**), Python paths, and all
+        # other Gaffer internals are found correctly on the render slave.
+        gafferRoot = os.path.dirname(os.path.dirname(gafferExe))
+        self.LogInfo("Setting GAFFER_ROOT = {}".format(gafferRoot))
+        self.SetEnvironmentVariable("GAFFER_ROOT", gafferRoot)
+
+        # Prepend Gaffer's own Python libs so startup scripts resolve correctly
+        gafferPython = os.path.join(gafferRoot, "python")
+        existingPythonPath = os.environ.get("PYTHONPATH", "")
+        if gafferPython not in existingPythonPath:
+            self.SetEnvironmentVariable(
+                "PYTHONPATH",
+                gafferPython + os.pathsep + existingPythonPath if existingPythonPath else gafferPython
+            )
+
+        # gaffer.bat sets OSL_SHADER_PATHS so GafferOSL can find built-in shaders
+        # (Noise, Globals, etc.) under $GAFFER_ROOT/shaders. Without this, any
+        # OSLShader node that references a built-in shader fails on scene load even
+        # when the node is not connected to the render graph.
+        gafferShaders = os.path.join(gafferRoot, "shaders")
+        existingOslPaths = os.environ.get("OSL_SHADER_PATHS", "")
+        if gafferShaders not in existingOslPaths:
+            self.SetEnvironmentVariable(
+                "OSL_SHADER_PATHS",
+                gafferShaders + os.pathsep + existingOslPaths if existingOslPaths else gafferShaders
+            )
+        self.LogInfo("Setting OSL_SHADER_PATHS includes {}".format(gafferShaders))
+
         return gafferExe
 
     def GetRenderArguments(self):
