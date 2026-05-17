@@ -111,6 +111,7 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
             os.sep
         )
 
+        IECore.Log.info("DeadlineDispatcher jobDirectory: " + str(self.jobDirectory()))
         dispatchData["scriptNode"].serialiseToFile(dispatchData["scriptFile"])
 
         with Gaffer.Context.current() as c:
