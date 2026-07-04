@@ -534,6 +534,9 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
         PrismJob = Gaffer.NameValuePlug( "prism:job", Gaffer.StringPlug( "value", defaultValue = os.environ.get('prism:job', ''),), "prismJob" )
         parentPlug["deadline"]["environmentVariables"].addChild(PrismJob)
 
+        ReferencePath = Gaffer.NameValuePlug( "GAFFER_REFERENCE_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ.get('GAFFER_REFERENCE_PATHS', '').replace('\\','/'),), "member1" )
+        parentPlug["deadline"]["environmentVariables"].addChild(ReferencePath)
+
 
 IECore.registerRunTimeTyped(DeadlineDispatcher, typeName="GafferDeadline::DeadlineDispatcher")
 
