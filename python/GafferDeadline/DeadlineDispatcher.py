@@ -438,8 +438,14 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
                     "Threads": deadlinePlug["threads"].getValue(),
                 }
             else:
+                # Evaluate parameters in the job's task context (shot:id, renderPass,
+                # seq/shot from upstream ContextVariables...). Without this, values
+                # bake in the ambient dispatch context — the artist's session state —
+                # so e.g. a denoise task points at the UI-selected shot/pass instead
+                # of the one actually rendered.
                 data = IECore.CompoundData()
-                gafferNode["parameters"].fillCompoundData(data)
+                with Gaffer.Context(deadlineJob.getContext()):
+                    gafferNode["parameters"].fillCompoundData(data)
                 pluginInfo = dict(data)
 
             scriptContext = dispatchData["scriptNode"].context()
