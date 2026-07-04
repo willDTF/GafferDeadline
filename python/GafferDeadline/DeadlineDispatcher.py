@@ -531,7 +531,14 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
         DtfPipe = Gaffer.NameValuePlug( "DTF_PIPE", Gaffer.StringPlug( "value", defaultValue = os.environ.get('DTF_PIPE', '').replace('\\','/'),), "dtfPipe" )
         parentPlug["deadline"]["environmentVariables"].addChild(DtfPipe)
 
-        PrismJob = Gaffer.NameValuePlug( "prism:job", Gaffer.StringPlug( "value", defaultValue = os.environ.get('prism:job', ''),), "prismJob" )
+        # NOTE: the Deadline environment-variable NAME must be a plain identifier.
+        # A colon in the name (it used to be "prism:job") collides with Deadline's
+        # own "env:<NAME>" path-mapping token delimiter and makes CheckPathMapping()
+        # throw PathMappingInvalidTokensDictionaryException on every render task
+        # (token seen as "env:prism:job:"). The Gaffer context variable "${prism:job}"
+        # used throughout the templates is unrelated — it comes from the script's own
+        # "variables" node, not from this OS/Deadline environment variable.
+        PrismJob = Gaffer.NameValuePlug( "PRISM_JOB", Gaffer.StringPlug( "value", defaultValue = os.environ.get('prism:job', ''),), "prismJob" )
         parentPlug["deadline"]["environmentVariables"].addChild(PrismJob)
 
         ReferencePath = Gaffer.NameValuePlug( "GAFFER_REFERENCE_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ.get('GAFFER_REFERENCE_PATHS', '').replace('\\','/'),), "member1" )
