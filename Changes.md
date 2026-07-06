@@ -1,4 +1,5 @@
 # 0.59.0.1
+- Fixed error `Context has no variable named "frame"` when submitting a `DeadlineTask` node whose `parameters` are driven by expressions that pull scene computes (e.g. output globals). Batch contexts carry no `frame` variable, so parameter evaluation now pins `frame` to the job's first frame when missing.
 - Fixed bug where a task downstream of a Wedge task would only depend on one of the upstream wedged task / context combinations.
 
 # 0.59.0.0

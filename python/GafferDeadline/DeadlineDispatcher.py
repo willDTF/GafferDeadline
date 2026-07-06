@@ -444,7 +444,16 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
                 # so e.g. a denoise task points at the UI-selected shot/pass instead
                 # of the one actually rendered.
                 data = IECore.CompoundData()
-                with Gaffer.Context(deadlineJob.getContext()):
+                parameterContext = Gaffer.Context(deadlineJob.getContext())
+                if "frame" not in parameterContext.keys():
+                    # Batch contexts carry no "frame" variable, but expressions
+                    # feeding the parameters may pull scene computes that need
+                    # one (e.g. scene globals for output paths), so pin it to
+                    # the job's first frame.
+                    tasks = deadlineJob.getTasks()
+                    if tasks and tasks[0].getStartFrame() is not None:
+                        parameterContext.setFrame(tasks[0].getStartFrame())
+                with parameterContext:
                     gafferNode["parameters"].fillCompoundData(data)
                 pluginInfo = dict(data)
 
@@ -541,10 +550,18 @@ class DeadlineDispatcher(GafferDispatch.Dispatcher):
         # A colon in the name (it used to be "prism:job") collides with Deadline's
         # own "env:<NAME>" path-mapping token delimiter and makes CheckPathMapping()
         # throw PathMappingInvalidTokensDictionaryException on every render task
-        # (token seen as "env:prism:job:"). The Gaffer context variable "${prism:job}"
-        # used throughout the templates is unrelated — it comes from the script's own
-        # "variables" node, not from this OS/Deadline environment variable.
-        PrismJob = Gaffer.NameValuePlug( "PRISM_JOB", Gaffer.StringPlug( "value", defaultValue = os.environ.get('prism:job', ''),), "prismJob" )
+        # (token seen as "env:prism:job:").
+        #
+        # The VALUE must come from Gaffer's own context, not os.environ: nothing
+        # ever sets an OS env var literally named "prism:job" (that was always
+        # empty). "${prism:job}" is a Gaffer context variable set per-script by
+        # the script's own "variables" node (same one every template reads via
+        # ${prism:job} for render/USD paths). _setupPlugs() runs once at node
+        # creation with no script context, so the default must be the raw
+        # substitution string; it resolves at submit time inside the
+        # `with Gaffer.Context(deadlineJob.getContext())` block in
+        # __submitDeadlineJob, exactly like "BatchName"'s "${script:name}" default.
+        PrismJob = Gaffer.NameValuePlug( "PRISM_JOB", Gaffer.StringPlug( "value", defaultValue = "${prism:job}",), "prismJob" )
         parentPlug["deadline"]["environmentVariables"].addChild(PrismJob)
 
         ReferencePath = Gaffer.NameValuePlug( "GAFFER_REFERENCE_PATHS", Gaffer.StringPlug( "value", defaultValue = os.environ.get('GAFFER_REFERENCE_PATHS', '').replace('\\','/'),), "member1" )
